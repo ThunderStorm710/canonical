@@ -1,0 +1,31 @@
+1. How do you verify that the image you built in your local build system is the same one being served to users? 
+
+So as to verify that the image built in the local build system is the same one being served to users, I would check for the digest attached to it and compare this digest with the digest of the image pulled from the registry. 
+If they match, the images are identical.
+Besides that, I would either run the image locally and compare its behavior and output with the image served to users or use a tool like docker diff to check for any differences between the filesystems of the local image and the one served from the registry.
+
+
+2. What would change if you were publishing the same image for multiple architectures?
+
+If I was publishing the same image for multiple architectures some changes would have to be made and I would have to ensure that the image works separately for each target architecture (e.g., x86_64, ARM), i. e., prepare a build that supports multi-architecture builds as well as a manifest referencing all the architecture-specific images under a single tag and update the CI/CD pipeline so that it takes into consideration the multi-architecture build.
+
+
+3. Please describe a CI/CD pipeline that takes a GitHub repository with the C “Hello World” source code, and then builds and publishes a multi-architecture “Hello World” container image as an output (to any registry), reusing the Dockerfile from step 1.
+
+Firstly, I would set up the GitHub repository and add the Dockerfile and the C "Hellow World" source coude. 
+After that, I would make use of the Github Actions and setup the CI/CD pipeline so that it triggers on pushes to the main branch. 
+Having this done, I would then create the first job to checkout code and then another one to set up the buildx so that it allows for a multi-architecture build. 
+Finally I would  make sure to build and publish the image inside the Docker registry and procceed with a post-build verification through the methods aforementioned.
+In the end, the image should be inside a container registry (e.g., Docker Hub, AWS ECR) and should be available under a single tag that supports multiple architectures.
+
+
+4. Describe the pros and cons of squashing layers. Describe some circumstances when you may wish to squash or keep discrete layers.
+
+Squashing layers can result in a smaller image size by consolidating numerous layers into one, reducing redundant data and freeing up space. It also streamlines the picture structure, which makes it easier to handle and may improve performance during image pull operations. 
+In addition, squashing can improve privacy by deleting intermediary layers that may contain sensitive data or undesired alterations before the final image is created.
+On the other hand, one notable disadvantage is the lack of layer caching which can result in lengthier build times during development.
+Another drawback is less transparency, as it is more difficult to grasp the history of changes made throughout the build process. 
+As caching is less effective with flattened images, even modest modifications to the Dockerfile can cause the entire image to be rebuilt, extending the build time.
+
+Summing up, squashing layers is very useful when creating a final production image where size and simplicity are critical, or when the image contains sensitive data in intermediate levels.
+On the other hand, keeping discrete layers during development allows for more effective caching speeding up the build process and is useful for debugging because they help trace changes.
